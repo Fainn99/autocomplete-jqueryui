@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Autocomplete functionality with multi select and categories</title>
+  <link href="css/jquery-ui.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <label for="search">Search: </label>
+  <input id="search">
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-ui.min.js"></script>
+
+  <script>
+
+         
+
+            $(function() {
+
+              //category widget
+        $.widget( "custom.categoryComplete", $.ui.autocomplete, {
+    _create: function() {
+      this._super();
+      this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
+    },
+    _renderMenu: function( ul, items ) {
+      var that = this,
+        currentCategory = "";
+      $.each( items, function( index, item ) {
+        var li;
+        if ( item.category != currentCategory ) {
+          ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+          currentCategory = item.category;
+        }
+        li = that._renderItemData( ul, item );
+        if ( item.category ) {
+          li.attr( "aria-label", item.category + " : " + item.label );
+        }
+      });
+    }
+  });
+
+              //Data for testing
+    var data = [
+      { label: "Grrrrr", category: "" },
+      { label: "Griett", category: "" },
+      { label: "Griet", category: "" },
+       { label: "Griet", category: "" },
+      { label: "OneplusX", category: "Phone" },
+      { label: "Samsung", category: "Phone" },
+      { label: "OnePluse3", category: "Phone" },
+      { label: "Note 5", category: "Phone" },
+      { label: "Rahul Mad", category: "Names" },
+      { label: "Lokis Dev", category: "Names" },
+      { label: "Manogna", category: "Names" },
+      { label: "Patil", category: "Names" },
+    ];
+
+    // utilities
+     function split( val ) {
+      return val.split( /,\s*/ );
+    }
+    function extractLast( term ) {
+      return split( term ).pop();
+    }
+
+
+    // Multi select
+ 
+    $( "#search" )
+     //event methods 
+      .bind( "keydown", function( event ) {
+        if ( event.keyCode === $.ui.keyCode.TAB &&
+            $( this ).autocomplete( "instance" ).menu.active ) {
+          event.preventDefault();
+        }
+      })
+      .autocomplete({
+        minLength: 0,
+        source: function( request, response ) {
+          
+          response( $.ui.autocomplete.filter(
+            data, extractLast( request.term ) ) );
+        },
+        focus: function() {
+          return false;
+        },
+        select: function( event, ui ) {
+          var terms = split( this.value );
+          
+          terms.pop();
+        
+          terms.push( ui.item.value );
+        
+          terms.push( "" );
+          this.value = terms.join( ", " );
+          return false;
+        }
+      })
+ //Categories support for the search autocomplete
+    .categoryComplete({
+      delay: 0,
+      source: data
+    });
+  });
+        
+      </script>
+</body>
+
+</html>
